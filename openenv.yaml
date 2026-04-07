@@ -1,0 +1,130 @@
+name: opsenv
+author: "Akash Kapoor <akashkapoor12004@gmail.com>"
+license: MIT
+repository: "https://huggingface.co/spaces/Akashkapoor11121/opsenv"
+version: "1.0.0"
+description: >
+  OpsEnv is a real-world production incident response environment for AI agents.
+  An agent receives live-style incident alerts, error logs, and service metrics
+  and must perform three sequential SRE tasks: classify incident severity,
+  identify the true root cause service (beyond the symptomatic surface errors),
+  and execute the correct response by selecting the right runbook, estimating
+  resolution time, and writing a customer-facing status update.
+  The environment contains 12 realistic incidents across 6 failure domains
+  with intentionally misleading log signals to challenge frontier LLMs.
+
+tags:
+  - openenv
+  - sre
+  - incident-response
+  - real-world
+  - operations
+  - reliability-engineering
+  - nlp
+
+tasks:
+  - name: classify_severity
+    difficulty: easy
+    description: >
+      Classify the incident as P0 (complete outage), P1 (major degradation),
+      P2 (partial degradation), or P3 (minor/proactive) based on error rate,
+      affected users, latency signals, and business criticality.
+
+  - name: identify_root_cause
+    difficulty: medium
+    description: >
+      Identify the root cause service — not the symptom service — by analysing
+      log patterns and metrics.
+
+  - name: execute_response
+    difficulty: hard
+    description: >
+      Select the correct runbook, estimate resolution time, and write a
+      customer-facing status update without leaking internal service names.
+
+action_space:
+  type: object
+  description: >
+    Task-specific fields — each task uses a non-overlapping subset.
+  fields:
+    - name: severity
+      type: string
+      description: "Task 1 only. One of: P0, P1, P2, P3"
+    - name: root_cause_service
+      type: string
+      description: "Task 2 only. The root cause service name (e.g. postgres-payments)"
+    - name: root_cause_reason
+      type: string
+      description: "Task 2 only. Brief explanation citing log/metric evidence"
+    - name: runbook_id
+      type: string
+      description: "Task 3 only. One of the runbook IDs in available_runbooks"
+    - name: eta_minutes
+      type: integer
+      description: "Task 3 only. Estimated minutes to resolution"
+    - name: status_update
+      type: string
+      description: "Task 3 only. Customer-facing status page text (≥30 words)"
+    - name: notes
+      type: string
+      description: "Optional internal notes (not scored)"
+    - name: confidence
+      type: float
+      description: "Agent self-reported confidence 0.0–1.0 (not scored)"
+
+observation_space:
+  type: object
+  fields:
+    - name: incident_id
+      type: string
+    - name: title
+      type: string
+      description: "One-line incident summary"
+    - name: task_index
+      type: integer
+      description: "0=classify_severity, 1=identify_root_cause, 2=execute_response"
+    - name: task_name
+      type: string
+    - name: error_rate
+      type: float
+      description: "Service error rate 0.0–1.0"
+    - name: latency_p99_ms
+      type: integer
+    - name: affected_users
+      type: integer
+    - name: logs
+      type: "list[string]"
+      description: "Raw log lines — may contain misleading signals"
+    - name: metrics
+      type: "dict[string, float]"
+      description: "Service telemetry metrics"
+    - name: available_runbooks
+      type: "list[object]"
+      description: "4 runbook options {id, description} — one is correct"
+    - name: history
+      type: "list[object]"
+      description: "Previous steps in this episode"
+    - name: remaining_tasks
+      type: integer
+    - name: hint
+      type: string
+    - name: done
+      type: boolean
+
+env_vars:
+  - name: API_BASE_URL
+    description: "OpenAI-compatible API endpoint for LLM inference"
+    required: true
+    default: "https://router.huggingface.co/v1"
+  - name: MODEL_NAME
+    description: "Model identifier to use for inference"
+    required: true
+    default: "meta-llama/Llama-3.1-8B-Instruct"
+  - name: HF_TOKEN
+    description: "Hugging Face API key — used as the OpenAI client api_key"
+    required: false
+    default: ""
+  - name: OPENAI_API_KEY
+    description: "API key for OpenAI-compatible endpoint — accepted in place of HF_TOKEN"
+    required: false
+    default: ""
