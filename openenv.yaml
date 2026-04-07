@@ -120,6 +120,10 @@ env_vars:
     description: "Model identifier to use for inference"
     required: true
     default: "meta-llama/Llama-3.1-8B-Instruct"
+  - name: API_KEY
+    description: "LiteLLM proxy API key — injected by the hackathon validator; must be used for all LLM calls"
+    required: true
+    default: ""
   - name: HF_TOKEN
     description: "Hugging Face API key — used as the OpenAI client api_key"
     required: false

@@ -13,6 +13,7 @@ ENV PYTHONUNBUFFERED=1
 # Default inference configuration (override with -e at docker run time)
 ENV API_BASE_URL="https://router.huggingface.co/v1"
 ENV MODEL_NAME="meta-llama/Llama-3.1-8B-Instruct"
+ENV API_KEY=""
 ENV HF_TOKEN=""
 ENV OPENAI_API_KEY=""
 
